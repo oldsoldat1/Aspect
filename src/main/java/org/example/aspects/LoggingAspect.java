@@ -1,10 +1,15 @@
 package org.example.aspects;
 
+import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 
+import org.aspectj.lang.reflect.MethodSignature;
+import org.example.Book;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
+
+import static org.springframework.cglib.core.ReflectUtils.getSignature;
 
 @Component
 @Aspect
@@ -59,13 +64,35 @@ public class LoggingAspect {
 //
 
 
+    @Before("org.example.aspects.MyPointcuts.allAddMethods()")
+    public void beforeAddLoggingAdvice(JoinPoint joinPoint){
 
+        MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
+        System.out.println("methodSignature = " + methodSignature);
+        System.out.println("methodSignature.getMethod = " + methodSignature.getMethod());
+        System.out.println("methodSignature.getReturnType = " + methodSignature.getReturnType());
+        System.out.println("methodSignature.getName = " + methodSignature.getName());
 
+        System.out.println("beforeAddLoggingAdvice: логирование попытки получить книгу/журнал");
+        System.out.println("----------------------------------------------");
 
+        if(methodSignature.getName().equals("addBook")){
+            Object[] arguments = joinPoint.getArgs();
+            for(Object obj:arguments){
+                if (obj instanceof Book){
+                    Book myBook = (Book) obj;
+                    System.out.println("Информация о книге: название - "
+                            + myBook.getName() + ", автор - "
+                            + myBook.getAuthor() + ", год издания - "
+                            + myBook.getYearOfPublication());
 
-    @Before("org.example.MyPointcuts.allGetMethods()")
-    public void beforeGetLoggingAdvice(){
-        System.out.println("beforeGetLoggingAdvice: логирование попытки получить книгу/журнал");
+                }
+                else if(obj instanceof String){
+                    System.out.println("Книгу в библиотеку добавляет - " + obj);
+                }
+            }
+
+        }
     }
 
 
